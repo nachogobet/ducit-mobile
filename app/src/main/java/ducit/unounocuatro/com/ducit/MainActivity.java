@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         TessBaseAPI baseApi = new TessBaseAPI();
         baseApi.setDebug(true);
-        baseApi.init(Environment.getExternalStorageDirectory().toString(), "spa");
+        baseApi.init("/storage/emulated/0/", "spa");
         Bitmap bMap = BitmapFactory.decodeFile("/storage/emulated/0/Pictures/celu2.jpg");
         baseApi.setImage(bMap);
         String recognizedText = baseApi.getUTF8Text();
