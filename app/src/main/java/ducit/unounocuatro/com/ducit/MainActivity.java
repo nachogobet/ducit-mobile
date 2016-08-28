@@ -20,6 +20,9 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 
 import org.opencv.core.Mat;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -43,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         baseApi.init("/storage/emulated/0/", "spa");
         //Bitmap bMap = BitmapFactory.decodeFile("/storage/emulated/0/Pictures/celu2.jpg");
 
-        Mat source = Imgcodecs.imread("/storage/emulated/0/Pictures/celu2.jpg");
+        Mat source = Imgcodecs.imread("/storage/emulated/0/Pictures/elmer.jpg");
         Mat marcado = new Mat();
         Mat hsv = new Mat();
         Mat gauss = new Mat();
@@ -71,11 +74,40 @@ public class MainActivity extends AppCompatActivity {
 
         //Imgcodecs.imwrite("./src/main/resources/images/hsv.jpg",adapt);
 
-        Bitmap scale = Bitmap.createBitmap(adapt.width(), adapt.height(), Bitmap.Config.ARGB_8888);
+        //
+        //VAR
+        Mat inv = new Mat();//-->invierto la Mat que estabas usando como imagen final(creo que yo la tengo como marcado, pero vos no se como...fijate)
+        Mat fin = new Mat();//-->invierto la anterior(inv) para que quede sin lineas
 
-        Utils.matToBitmap(adapt, scale);
+//código nuevo
 
-        baseApi.setImage(cleanLines(scale));
+        Imgproc.adaptiveThreshold(adapt, inv, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 25, 130);
+        //Imgcodecs.imwrite("invertido.jpg",inv);
+
+        Imgproc.adaptiveThreshold(inv, fin, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 15, -1);
+        //Imgcodecs.imwrite("fin.jpg",fin);
+
+        //
+
+        Bitmap scale = Bitmap.createBitmap(fin.width(), fin.height(), Bitmap.Config.ARGB_8888);
+
+        Utils.matToBitmap(fin, scale);
+
+
+
+        File mypath=new File("/storage/emulated/0/Pictures/elmer-mod.png");
+        FileOutputStream fos = null;
+        try{
+            fos = new FileOutputStream(mypath);
+            scale.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.close();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        //baseApi.setImage(cleanLines(scale));
+        baseApi.setImage(scale);
 
         String recognizedText = baseApi.getUTF8Text();
         LinearLayout lView = new LinearLayout(this);
@@ -125,4 +157,6 @@ public class MainActivity extends AppCompatActivity {
         if(image.getPixel(i+1, j+1)==Color.BLACK)
             doCleanLines(image, i+1, j+1);
     }
+
+
 }
